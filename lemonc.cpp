@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <cstdlib>
 
 #include <lemon/list_graph.h>
@@ -23,7 +25,11 @@ int main() {
 
   cout << "initialized variables" << endl;
 
-  getMatching(&plist1, &plist2, length);
+  std::ifstream ifs("test_graph.lgf");
+  std::string content((std::istreambuf_iterator<char>(ifs)),
+                      (std::istreambuf_iterator<char>()));
+
+  getMatching(&plist1, &plist2, length, content.c_str());
 
   cout << "finished matching" << endl;
 
@@ -36,50 +42,52 @@ int main() {
   return 0;
 }
 
-void getMatching(int **plist1, int **plist2, int *length) {
+void getMatching(int **plist1, int **plist2, int *length, const char* graph_str) {
 
-  cout << "called getMatching" << endl;
+  //cout << "called getMatching" << endl;
 
   ListGraph g;
   ListGraph::EdgeMap<double> weights(g);
 
-  graphReader(g, "test_graph.lgf")
+  istringstream graph_stream(graph_str);
+
+  graphReader(g, graph_stream)
     .edgeMap("weights", weights)
     .run();
 
-  cout << "read graph" << endl;
+  //cout << "read graph" << endl;
 
   MaxWeightedMatching<ListGraph, ListGraph::EdgeMap<double>> mwm(g, weights);
   mwm.run();
 
-  cout << "matching size: " << mwm.matchingSize() << endl;
-  cout << "matching weight: " << mwm.matchingWeight() << endl;
+  //cout << "matching size: " << mwm.matchingSize() << endl;
+  //cout << "matching weight: " << mwm.matchingWeight() << endl;
 
-  cout << "ran matching" << endl;
+  //cout << "ran matching" << endl;
 
   int num_nodes = 0;
   for(ListGraph::NodeIt nd(g); nd != INVALID; ++nd) {
     ++num_nodes;
   }
 
-  cout << "counted nodes: " << num_nodes << endl;
+  //cout << "counted nodes: " << num_nodes << endl;
 
   *length = (num_nodes + 1) / 2; //round up
 
-  cout << "calculated pairings length: " << *length << endl;
+  //cout << "calculated pairings length: " << *length << endl;
 
   int num_edges = 0;
   for(ListGraph::EdgeIt e(g); e != INVALID; ++e) {
     ++num_edges;
   }
 
-  cout << "counted edges: " << num_edges << endl;
+  //cout << "counted edges: " << num_edges << endl;
 
   *plist1 = (int*)malloc( sizeof(int) * *length );
   *plist2 = (int*)malloc( sizeof(int) * *length );
   int *used = (int*)malloc( sizeof(int) * num_nodes );
 
-  cout << "allocated arrays" << endl;
+  //cout << "allocated arrays" << endl;
 
   for(int i = 0; i < *length; ++i) {
     (*plist1)[i] = -1;
@@ -90,11 +98,11 @@ void getMatching(int **plist1, int **plist2, int *length) {
     used[i] = 0;
   }
 
-  printArray("plist1", *plist1, *length);
-  printArray("plist2", *plist2, *length);
-  printArray("used", used, num_nodes);
+  //printArray("plist1", *plist1, *length);
+  //printArray("plist2", *plist2, *length);
+  //printArray("used", used, num_nodes);
 
-  cout << "initialized arrays" << endl;
+  //cout << "initialized arrays" << endl;
 
   ListGraph::NodeIt nd(g);
   for(int i = 0; i < *length && nd != INVALID; ++nd) {
@@ -105,7 +113,7 @@ void getMatching(int **plist1, int **plist2, int *length) {
       (*plist1)[i] = node_id;
       
       ListGraph::Node mate = mwm.mate(nd);
-      cout << "mate id: " << g.id(mate) << endl;
+      //cout << "mate id: " << g.id(mate) << endl;
 
       if(mate != INVALID) {
 	int mate_id = g.id(mate);
@@ -116,11 +124,11 @@ void getMatching(int **plist1, int **plist2, int *length) {
     }
   }
 
-  printArray("plist1", *plist1, *length);
-  printArray("plist2", *plist2, *length);
-  printArray("used", used, num_nodes);
+  //printArray("plist1", *plist1, *length);
+  //printArray("plist2", *plist2, *length);
+  //printArray("used", used, num_nodes);
 
-  cout << "made pairings" << endl;
+  //cout << "made pairings" << endl;
 
   free(used);
 }
